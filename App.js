@@ -2,7 +2,7 @@ Ext.define('CustomApp', {
 	extend: 'Rally.app.App',
 	componentCls: 'app',
 	layout: {
-		type: 'vbox',
+		type: 'fit',
 		align: 'left'
 	},
 	launch: function() {	
@@ -43,7 +43,7 @@ Ext.define('CustomApp', {
 			// add the title as a header
 			var title = items[i].getElementsByTagName( "title" )[0].childNodes[0].nodeValue;
 			var post_link = items[i].getElementsByTagName( "link" )[0].childNodes[0].nodeValue;
-			output_html += "<h3><a href='" + post_link + "' target='_blank'>" + title + "</a></h3>";
+			output_html += "<div class='post'><h3><a href='" + post_link + "' target='_blank'>" + title + "</a></h3>";
 			
 			// add the author and date
 			var author = items[i].getElementsByTagName( "creator" )[0].childNodes[0].nodeValue;
@@ -54,21 +54,32 @@ Ext.define('CustomApp', {
 			output_html += " on " + new Date(date_string).toLocaleDateString();
 			output_html += "<br/>";
 			
-			// add a preview of the text
+			// add a thumbnail
 			var content_html = items[i].getElementsByTagName( "description" )[0].childNodes[0].nodeValue;
+			// search for the first img src as creating a DOM would trigger loading or all the images
+			var thumbnail_srcs = content_html.match( /src="(.*?)"/ );
+			if ( thumbnail_srcs !== null ) {
+				var first_thumbnail = thumbnail_srcs[0].substring(5, thumbnail_srcs[0].length - 1 );
+				var thumbnail = "https://www.rallydev.com" + first_thumbnail;
+				output_html += "<div class='thumbnail'><img src='" + thumbnail + "' /></div>";
+			}
+			
+			// add a preview of the text
 			// create a copy of the html without image src to avoid loading all images
+			output_html += "<div class='text'>";
 			var content_html_no_images = content_html.replace( /src=".*?"/g, 'src=""' );
-			var div = document.createElement("div");
+			var div = document.createElement( "div" );
 			div.innerHTML = content_html_no_images;
 			var content_text = div.textContent || div.innerText || "";
-			output_html += content_text.slice( 0, max_content_length );
+			output_html += content_text; //.slice( 0, max_content_length );
 			// add an elipsis if the post content would go longer
 			if ( content_text.length > max_content_length ) {
 				output_html += "...";
 			}
+			output_html += "</div>";
 			
 			// add a separator
-			output_html += "<hr/>";
+			output_html += "</div><hr/>";
 		}
 		
         this.add({
