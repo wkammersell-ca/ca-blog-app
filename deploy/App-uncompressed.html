@@ -65,8 +65,8 @@
 			
 			// add a preview of the text
 			var content_html = items[i].getElementsByTagName( "description" )[0].childNodes[0].nodeValue;
+			// create a copy of the html without image src to avoid loading all images
 			var content_html_no_images = content_html.replace( /src=".*?"/g, 'src=""' );
-			alert( content_html_no_images );
 			var div = document.createElement("div");
 			div.innerHTML = content_html_no_images;
 			var content_text = div.textContent || div.innerText || "";
