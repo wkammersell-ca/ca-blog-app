@@ -8,13 +8,87 @@
     <script type="text/javascript">
         Rally.onReady(function () {
                 Ext.define('CustomApp', {
-    extend: 'Rally.app.App',
-    componentCls: 'app',
-    launch: function() {
-        //Write app code here
+	extend: 'Rally.app.App',
+	componentCls: 'app',
+	layout: {
+		type: 'vbox',
+		align: 'left'
+	},
+	launch: function() {
+		// other blog options (that don't work yet)
+		// var blog_feed_url = "http://www.ca.com/us/rss/news/feed.aspx";
+		// var blog_feed_url = "https://medium.com/feed/ca-rabu-life";
+		// var blog_feed_url = "https://blogs.ca.com/feed/";
+		
+		// initialize variables
+		var blog_feed_url = "https://www.rallydev.com/blog/all-blogs.xml";
+		var blog_feed = "";
+		var xmlhttp;
+		
+		// load blog feed
+		// code for IE7+, Firefox, Chrome, Opera, Safari, SeaMonkey
+		if ( window.XMLHttpRequest ) {
+			xmlhttp=new XMLHttpRequest();
+		} else { // code for IE6, IE5
+			xmlhttp=new ActiveXObject( "Microsoft.XMLHTTP" );
+		}
+		xmlhttp.onreadystatechange=function() {
+			if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
+				blog_feed = xmlhttp.responseText;
+			}
+		};
+		xmlhttp.open( "GET", blog_feed_url, false );
+		xmlhttp.send();
+		
+		// for now, just write the feed to the app
+		this.add({
+            xtype: 'component',
+            html: blog_feed
+        });
+        
+	//	var parser = new DOMParser()
+	//	var doc = parser.parseFromString(blog_feed, "text/xml");
+		
+		// doc.firstChild // => <div id="foo">...
+		// doc.firstChild.firstChild // => <a href="#">...
+		
+		// get the reference for the body
+        // get the reference for the body
+       // var mybody = document.getElementsByTagName("body")[0];
+       //var mybody = document.getElementsByTagName("body")[0];
 
-        //API Docs: https://help.rallydev.com/apps/2.1/doc/
-    }
+        // creates <table> and <tbody> elements
+  /*      mytable     = document.createElement("table");
+        mytablebody = document.createElement("tbody");
+
+        // creating all cells
+        for(var j = 0; j < 2; j++) {
+            // creates a <tr> element
+            mycurrent_row = document.createElement("tr");
+
+            for(var i = 0; i < 2; i++) {
+                // creates a <td> element
+                mycurrent_cell = document.createElement("td");
+                // creates a Text Node
+                currenttext = document.createTextNode("cell is row " + j + ", column " + i);
+                // appends the Text Node we created into the cell <td>
+                mycurrent_cell.appendChild(currenttext);
+                // appends the cell <td> into the row <tr>
+                mycurrent_row.appendChild(mycurrent_cell);
+            }
+            // appends the row <tr> into <tbody>
+            mytablebody.appendChild(mycurrent_row);
+        }
+
+        // appends <tbody> into <table>
+        mytable.appendChild(mytablebody);
+        // appends <table> into <body>
+        this.add(mytable);
+        // sets the border attribute of mytable to 2;
+        mytable.setAttribute("border","2");;*/
+        
+        
+	} 
 });
 
 
