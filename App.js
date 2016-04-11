@@ -13,7 +13,7 @@ Ext.define('CustomApp', {
 		
 		// initialize variables
 		var blog_feed_url = "https://www.rallydev.com/blog/all-blogs.xml";
-		var blog_feed = "";
+		var blog_feed;
 		var xmlhttp;
 		
 		// load blog feed
@@ -39,9 +39,20 @@ Ext.define('CustomApp', {
 		var output_html = "";
 		var items = blog_feed.getElementsByTagName( "item" );
 		for ( var i = 0; i < items.length; i++ ) {
-			var title = items[i].getElementsByTagName( "title" )[0];
-			output_html += title.childNodes[0].nodeValue;
-			output_html += "<br/>";
+			// add the title as a header
+			var title = items[i].getElementsByTagName( "title" )[0].childNodes[0].nodeValue;
+			output_html += "<h3>" + title + "</h3>";
+			
+			// add the author and date
+			var author = items[i].getElementsByTagName( "creator" )[0].childNodes[0].nodeValue;
+			// the link to a post's author is their first and last name, separated by '-'
+			var author_link = "https://www.rallydev.com/blog/authors/" + author.replace( ' ', '-' ).toLowerCase();
+			var date_string = items[i].getElementsByTagName( "pubDate" )[0].childNodes[0].nodeValue;
+			output_html += "by " + "<a href='" + author_link + "' target='_blank' >" + author + "</a>";
+			output_html += " on " + new Date(date_string).toLocaleDateString();
+			
+			// add a separator
+			output_html += "<hr/>";
 		}
 		
         this.add({
