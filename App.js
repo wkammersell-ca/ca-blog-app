@@ -25,16 +25,28 @@ Ext.define('CustomApp', {
 		}
 		xmlhttp.onreadystatechange=function() {
 			if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
-				blog_feed = xmlhttp.responseText;
+				blog_feed = xmlhttp.responseXML;
 			}
 		};
 		xmlhttp.open( "GET", blog_feed_url, false );
 		xmlhttp.send();
 		
-		// for now, just write the feed to the app
-		this.add({
+		// convert the XML to DOM for navigation
+		//var parser = new DOMParser();
+		//var doc = parser.parseFromString(blog_feed, "text/xml");
+		
+		// display an entry for each item
+		var output_html = "";
+		var items = blog_feed.getElementsByTagName( "item" );
+		for ( var i = 0; i < items.length; i++ ) {
+			var title = items[i].getElementsByTagName( "title" )[0];
+			output_html += title.childNodes[0].nodeValue;
+			output_html += "<br/>";
+		}
+		
+        this.add({
             xtype: 'component',
-            html: blog_feed
+            html: output_html
         });
 	} 
 });

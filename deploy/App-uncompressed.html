@@ -34,60 +34,29 @@
 		}
 		xmlhttp.onreadystatechange=function() {
 			if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
-				blog_feed = xmlhttp.responseText;
+				blog_feed = xmlhttp.responseXML;
 			}
 		};
 		xmlhttp.open( "GET", blog_feed_url, false );
 		xmlhttp.send();
 		
-		// for now, just write the feed to the app
-		this.add({
+		// convert the XML to DOM for navigation
+		//var parser = new DOMParser();
+		//var doc = parser.parseFromString(blog_feed, "text/xml");
+		
+		// display an entry for each item
+		var output_html = "";
+		var items = blog_feed.getElementsByTagName( "item" );
+		for ( var i = 0; i < items.length; i++ ) {
+			var title = items[i].getElementsByTagName( "title" )[0];
+			output_html += title.childNodes[0].nodeValue;
+			output_html += "<br/>";
+		}
+		
+        this.add({
             xtype: 'component',
-            html: blog_feed
+            html: output_html
         });
-        
-	//	var parser = new DOMParser()
-	//	var doc = parser.parseFromString(blog_feed, "text/xml");
-		
-		// doc.firstChild // => <div id="foo">...
-		// doc.firstChild.firstChild // => <a href="#">...
-		
-		// get the reference for the body
-        // get the reference for the body
-       // var mybody = document.getElementsByTagName("body")[0];
-       //var mybody = document.getElementsByTagName("body")[0];
-
-        // creates <table> and <tbody> elements
-  /*      mytable     = document.createElement("table");
-        mytablebody = document.createElement("tbody");
-
-        // creating all cells
-        for(var j = 0; j < 2; j++) {
-            // creates a <tr> element
-            mycurrent_row = document.createElement("tr");
-
-            for(var i = 0; i < 2; i++) {
-                // creates a <td> element
-                mycurrent_cell = document.createElement("td");
-                // creates a Text Node
-                currenttext = document.createTextNode("cell is row " + j + ", column " + i);
-                // appends the Text Node we created into the cell <td>
-                mycurrent_cell.appendChild(currenttext);
-                // appends the cell <td> into the row <tr>
-                mycurrent_row.appendChild(mycurrent_cell);
-            }
-            // appends the row <tr> into <tbody>
-            mytablebody.appendChild(mycurrent_row);
-        }
-
-        // appends <tbody> into <table>
-        mytable.appendChild(mytablebody);
-        // appends <table> into <body>
-        this.add(mytable);
-        // sets the border attribute of mytable to 2;
-        mytable.setAttribute("border","2");;*/
-        
-        
 	} 
 });
 
