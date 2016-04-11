@@ -7,7 +7,7 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                Ext.define("CustomApp",{extend:"Rally.app.App",componentCls:"app",launch:function(){}});
+                Ext.define("CustomApp",{extend:"Rally.app.App",componentCls:"app",layout:{type:"vbox",align:"left"},launch:function(){var blog_feed_url="https://www.rallydev.com/blog/all-blogs.xml",blog_feed="",xmlhttp;xmlhttp=window.XMLHttpRequest?new XMLHttpRequest:new ActiveXObject("Microsoft.XMLHTTP"),xmlhttp.onreadystatechange=function(){4==xmlhttp.readyState&&200==xmlhttp.status&&(blog_feed=xmlhttp.responseText)},xmlhttp.open("GET",blog_feed_url,!1),xmlhttp.send(),this.add({xtype:"component",html:blog_feed})}});
 
             Rally.launchApp('CustomApp', {
                 name:"ca-blog-app",
