@@ -15,6 +15,7 @@ Ext.define('CustomApp', {
 		var blog_feed_url = "https://www.rallydev.com/blog/all-blogs.xml";
 		var blog_feed;
 		var xmlhttp;
+		var days_for_new_post = 3;
 		
 		// load blog feed
 		// code for IE7+, Firefox, Chrome, Opera, Safari, SeaMonkey
@@ -35,10 +36,21 @@ Ext.define('CustomApp', {
 		var output_html = "";
 		var items = blog_feed.getElementsByTagName( "item" );
 		for ( var i = 0; i < items.length; i++ ) {
-			// add the title as a header
+			// if the post is new, give it visual distinction
+			var date = new Date( items[i].getElementsByTagName( "pubDate" )[0].childNodes[0].nodeValue );
+			var new_post = Date.now() - date <= ( 86400000 * days_for_new_post );
+			
+			output_html += "<div class='post'>";
+						
+			// add the title
 			var title = items[i].getElementsByTagName( "title" )[0].childNodes[0].nodeValue;
 			var post_link = items[i].getElementsByTagName( "link" )[0].childNodes[0].nodeValue;
-			output_html += "<div class='post'><div class='title'><a href='" + post_link + "' target='_blank'>" + title + "</a></div>";
+			if ( new_post ) {
+				output_html += "<div class='title new'>";
+			} else {
+				output_html += "<div class='title'>";
+			}
+			output_html += "<a href='" + post_link + "' target='_blank'>" + title + "</a></div>";
 			
 			// add the author and date
 			var author = items[i].getElementsByTagName( "creator" )[0].childNodes[0].nodeValue;
@@ -47,7 +59,7 @@ Ext.define('CustomApp', {
 			var date_string = items[i].getElementsByTagName( "pubDate" )[0].childNodes[0].nodeValue;
 			output_html += "<div class='metadata'>";
 			output_html += "by " + "<a href='" + author_link + "' target='_blank' >" + author + "</a>";
-			output_html += " on " + new Date(date_string).toLocaleDateString();
+			output_html += " on " + date.toLocaleDateString();
 			output_html += "</div>";
 			
 			// add a thumbnail
