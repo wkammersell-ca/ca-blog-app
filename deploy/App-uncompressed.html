@@ -11,10 +11,10 @@
 	extend: 'Rally.app.App',
 	componentCls: 'app',
 	layout: {
-		type: 'vbox',
+		type: 'fit',
 		align: 'left'
 	},
-	launch: function() {
+	launch: function() {	
 		// other blog options (that don't work yet)
 		// var blog_feed_url = "http://www.ca.com/us/rss/news/feed.aspx";
 		// var blog_feed_url = "https://medium.com/feed/ca-rabu-life";
@@ -22,8 +22,9 @@
 		
 		// initialize variables
 		var blog_feed_url = "https://www.rallydev.com/blog/all-blogs.xml";
-		var blog_feed = "";
+		var blog_feed;
 		var xmlhttp;
+		var days_for_new_post = 3;
 		
 		// load blog feed
 		// code for IE7+, Firefox, Chrome, Opera, Safari, SeaMonkey
@@ -34,60 +35,73 @@
 		}
 		xmlhttp.onreadystatechange=function() {
 			if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
-				blog_feed = xmlhttp.responseText;
+				blog_feed = xmlhttp.responseXML;
 			}
 		};
 		xmlhttp.open( "GET", blog_feed_url, false );
 		xmlhttp.send();
 		
-		// for now, just write the feed to the app
-		this.add({
+		// display an entry for each item
+		var output_html = "";
+		var items = blog_feed.getElementsByTagName( "item" );
+		for ( var i = 0; i < items.length; i++ ) {
+			// if the post is new, give it visual distinction
+			var date = new Date( items[i].getElementsByTagName( "pubDate" )[0].childNodes[0].nodeValue );
+			var new_post = Date.now() - date <= ( 86400000 * days_for_new_post );
+			
+			output_html += "<div class='post'>";
+						
+			// add the title
+			var title = items[i].getElementsByTagName( "title" )[0].childNodes[0].nodeValue;
+			var post_link = items[i].getElementsByTagName( "link" )[0].childNodes[0].nodeValue;
+			if ( new_post ) {
+				output_html += "<div class='title new'>";
+			} else {
+				output_html += "<div class='title'>";
+			}
+			output_html += "<a href='" + post_link + "' target='_blank'>" + title + "</a></div>";
+			
+			// add the author and date
+			var author = items[i].getElementsByTagName( "creator" )[0].childNodes[0].nodeValue;
+			// the link to a post's author is their first and last name, separated by '-'
+			var author_link = "https://www.rallydev.com/blog/authors/" + author.replace( ' ', '-' ).toLowerCase();
+			var date_string = items[i].getElementsByTagName( "pubDate" )[0].childNodes[0].nodeValue;
+			output_html += "<div class='metadata'>";
+			output_html += "by " + "<a href='" + author_link + "' target='_blank' >" + author + "</a>";
+			output_html += " on " + date.toLocaleDateString();
+			output_html += "</div>";
+			
+			// add a thumbnail
+			var content_html = items[i].getElementsByTagName( "description" )[0].childNodes[0].nodeValue;
+			// search for the first img src as creating a DOM would trigger loading or all the images
+			var thumbnail_srcs = content_html.match( /src="(.*?)"/ );
+			if ( thumbnail_srcs !== null ) {
+				var first_thumbnail = thumbnail_srcs[0].substring(5, thumbnail_srcs[0].length - 1 );
+				var thumbnail = "https://www.rallydev.com" + first_thumbnail;
+				output_html += "<div class='thumbnail'><img src='" + thumbnail + "' /></div>";
+			}
+			
+			// add a preview of the text
+			// create a copy of the html without image src to avoid loading all images
+			output_html += "<div class='text'>";
+			var content_html_no_images = content_html.replace( /src=".*?"/g, 'src=""' );
+			var div = document.createElement( "div" );
+			div.innerHTML = content_html_no_images;
+			var content_text = div.textContent || div.innerText || "";
+			output_html += content_text;
+			output_html += "</div>";
+			
+			// add "read more..."
+			output_html += "<div class='readmore'><a href='" + post_link + "'>Read More...</a></div>";
+			
+			// add a separator
+			output_html += "</div><hr/>";
+		}
+		
+        this.add({
             xtype: 'component',
-            html: blog_feed
+            html: output_html
         });
-        
-	//	var parser = new DOMParser()
-	//	var doc = parser.parseFromString(blog_feed, "text/xml");
-		
-		// doc.firstChild // => <div id="foo">...
-		// doc.firstChild.firstChild // => <a href="#">...
-		
-		// get the reference for the body
-        // get the reference for the body
-       // var mybody = document.getElementsByTagName("body")[0];
-       //var mybody = document.getElementsByTagName("body")[0];
-
-        // creates <table> and <tbody> elements
-  /*      mytable     = document.createElement("table");
-        mytablebody = document.createElement("tbody");
-
-        // creating all cells
-        for(var j = 0; j < 2; j++) {
-            // creates a <tr> element
-            mycurrent_row = document.createElement("tr");
-
-            for(var i = 0; i < 2; i++) {
-                // creates a <td> element
-                mycurrent_cell = document.createElement("td");
-                // creates a Text Node
-                currenttext = document.createTextNode("cell is row " + j + ", column " + i);
-                // appends the Text Node we created into the cell <td>
-                mycurrent_cell.appendChild(currenttext);
-                // appends the cell <td> into the row <tr>
-                mycurrent_row.appendChild(mycurrent_cell);
-            }
-            // appends the row <tr> into <tbody>
-            mytablebody.appendChild(mycurrent_row);
-        }
-
-        // appends <tbody> into <table>
-        mytable.appendChild(mytablebody);
-        // appends <table> into <body>
-        this.add(mytable);
-        // sets the border attribute of mytable to 2;
-        mytable.setAttribute("border","2");;*/
-        
-        
 	} 
 });
 
@@ -103,8 +117,46 @@
 
 
     <style type="text/css">
-        .app {
-  /* Add app styles here */
+        .post {
+  display: inline-block;
+  padding-left: 10px;
+  font-size: 14px;
+}
+.new {
+  background-color: #FDDCC6;
+}
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.title a {
+  color: #B81B10;
+}
+.metadata {
+  margin-bottom: 5px;
+  color: #A9A9A9;
+}
+.metadata a {
+  text-decoration: underline;
+  color: #A9A9A9;
+}
+.thumbnail {
+  float: left;
+}
+.thumbnail img {
+  max-width: 200px;
+  max-height: 100px;
+  border: 1px solid #A9A9A9;
+  margin-right: 10px;
+}
+.text {
+  max-height: 95px;
+  min-height: 95px;
+  overflow: hidden;
+}
+.readmore a {
+  color: #B81B10;
 }
 
     </style>
